@@ -20,6 +20,15 @@ from utils.get_weights_path import *
 from utils.basics import *
 from utils.resnet_helpers import *
 from utils.BilinearUpSampling import *
+from keras.layers import merge, Input
+from keras.layers.core import Activation
+from keras.layers.convolutional import Convolution2D, Deconvolution2D, Cropping2D
+from keras.models import Model
+from keras.engine.topology import Layer
+from keras.utils.layer_utils import layer_from_config
+from keras.utils import np_utils, generic_utils
+from keras import backend as K
+from keras.applications.vgg16 import VGG16, preprocess_input
 
 # https://github.com/wkentaro/pytorch-fcn/blob/master/torchfcn/models/fcn32s.py
 # fc weights into the 1x1 convs  , get_upsampling_weight
@@ -405,95 +414,102 @@ def FCN_Vgg16_8s(input_shape=None, weight_decay=0., batch_momentum=0.9, batch_sh
         img_input = Input(shape=input_shape)
         image_size = input_shape[0:2]
 
-    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(
-        img_input)
-    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
-    f1 = x
-    # Block 2
-    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1')(x)
-    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
-    f2 = x
+   
+    
+    vgg16 = VGG16(include_top=False,
+                           weights='imagenet',
+                           input_tensor=None,
+                           input_shape=(img_size[0], img_size[1],3))
 
-    # Block 3
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1')(x)
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2')(x)
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
-    f3 = x
+    
+        #(samples, channels, rows, cols)
+	#ip = Input(shape=(3, self.img_height, self.img_width))
+	h = vgg16.layers[1](img_input)
+	h = vgg16.layers[2](h)
+	h = vgg16.layers[3](h)
+	h = vgg16.layers[4](h)
+	h = vgg16.layers[5](h)
+	h = vgg16.layers[6](h)
+	h = vgg16.layers[7](h)
+	h = vgg16.layers[8](h)
+	h = vgg16.layers[9](h)
+	h = vgg16.layers[10](h)
 
-    # Block 4
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1')(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2')(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
-    f4 = x
+	# split layer
+	p3 = h
 
-    # Block 5
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1')(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2')(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
-    f5 = x
+	h = vgg16.layers[11](h)
+	h = vgg16.layers[12](h)
+	h = vgg16.layers[13](h)
+	h = vgg16.layers[14](h)
 
-   # x = Flatten(name='flatten')(x)
-   # x = Dense(4096, activation='relu', name='fc1')(x)
-   # x = Dense(4096, activation='relu', name='fc2')(x)
-   # x = Dense(1000, activation='softmax', name='predictions')(x)
+	# split layer
+	p4 = h
 
-    #vgg = Model(img_input, x)
-    #weights_path = 'Models/FCN_Vgg16_8s/vgg16_weights_th_dim_ordering_th_kernels.h5'
-    #vgg.load_weights(weights_path)
+	h = vgg16.layers[15](h)
+	h = vgg16.layers[16](h)
+	h = vgg16.layers[17](h)
+	h = vgg16.layers[18](h)
 
-    o = f5
+	p5 = h
+	
+	p5 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal',activation='linear',kernel_regularizer=l2(weight_decay)))(p5)
+	#print(o.shape)
+	p5 = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(p5)
+	#print(o.shape)
+	#imshow(o)
+	o=p5
+	K.print_tensor(o)
+	o2 = p4
+	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
+	#print(o2.shape)
+	o, o2 = crop(o, o2, img_input)
+	#print(o.shape)
+	#print(o2.shape)
+	o = Add()([o, o2])
 
-    o = (Conv2D(4096, (7, 7), activation='relu', padding='same',name='fc1',kernel_regularizer=l2(weight_decay)))(o)
-    o = Dropout(0.5)(o)
-    o = (Conv2D(4096, (1, 1), activation='relu', padding='same',name='fc2',kernel_regularizer=l2(weight_decay)))(o)
-    o = Dropout(0.5)(o)
 
-    o = (Conv2D(classes, (1, 1), kernel_initializer='he_normal',activation='linear',kernel_regularizer=l2(weight_decay)))(o)
-    #print(o.shape)
-    o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
-    #print(o.shape)
-    #imshow(o)
-    K.print_tensor(o)
-    o2 = f4
-    o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
-    #print(o2.shape)
-    o, o2 = crop(o, o2, img_input)
-    #print(o.shape)
-    #print(o2.shape)
-    o = Add()([o, o2])
+	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+	o2 = p3
+	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
+	o2, o = crop(o2, o, img_input)
+	o = Add()([o2, o])	
 
-    o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
-    o2 = f3
-    o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
-    o2, o = crop(o2, o, img_input)
-    o = Add()([o2, o])
+	#o = Conv2DTranspose(classes, kernel_size=(16, 16), strides=(8, 8), use_bias=False)(o)
+	o = Conv2DTranspose(classes, kernel_size=(8, 8), strides=(8, 8), use_bias=False)(o)
 
-    #o = Conv2DTranspose(classes, kernel_size=(16, 16), strides=(8, 8), use_bias=False)(o)
-    o = Conv2DTranspose(classes, kernel_size=(8, 8), strides=(8, 8), use_bias=False)(o)
+	o_shape = Model(img_input, o).output_shape
 
-    o_shape = Model(img_input, o).output_shape
+	outputHeight = o_shape[1]
+	outputWidth = o_shape[2]
 
-    outputHeight = o_shape[1]
-    outputWidth = o_shape[2]
+	o = (Reshape((-1, outputHeight * outputWidth)))(o)
+	o = (Permute((2, 1)))(o)
+	o = (Reshape((outputHeight , outputWidth,-1)))(o)
+	o = (Activation('softmax'))(o)
+	model = Model(img_input, o)
+	model.outputWidth = outputWidth
+	model.outputHeight = outputHeight
+	#weights_path = 'Models/FCN_Vgg16_8s/fcn_vgg16_weights_tf_dim_ordering_tf_kernels.h5'
+	#model.load_weights(weights_path, by_name=True)
+	#return model
 
-    o = (Reshape((-1, outputHeight * outputWidth)))(o)
-    o = (Permute((2, 1)))(o)
-    o = (Reshape((outputHeight , outputWidth,-1)))(o)
-    o = (Activation('softmax'))(o)
-    model = Model(img_input, o)
-    model.outputWidth = outputWidth
-    model.outputHeight = outputHeight
-    weights_path = 'Models/FCN_Vgg16_8s/fcn_vgg16_weights_tf_dim_ordering_tf_kernels.h5'
-    model.load_weights(weights_path, by_name=True)
-    #return model
+	return model
+	
 
-    return model
 
+
+
+
+
+
+
+
+
+
+	
+	# get scores
+	
 
 
 def top(x, input_shape, classes, activation, weight_decay):
@@ -513,41 +529,6 @@ def top(x, input_shape, classes, activation, weight_decay):
 
     return x
 
-
-
-def FCN_Vgg16_32s(input_shape=None, weight_decay=0., batch_momentum=0.9, batch_shape=None, classes=21):
-    if batch_shape:
-        img_input = Input(batch_shape=batch_shape)
-        image_size = batch_shape[1:3]
-    else:
-        img_input = Input(shape=input_shape)
-        image_size = input_shape[0:2]
-    # Block 1
-    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1', kernel_regularizer=l2(weight_decay))(img_input)
-    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2', kernel_regularizer=l2(weight_decay))(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
-
-    # Block 2
-    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1', kernel_regularizer=l2(weight_decay))(x)
-    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2', kernel_regularizer=l2(weight_decay))(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
-
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1', kernel_regularizer=l2(weight_decay))(x)
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2', kernel_regularizer=l2(weight_decay))(x)
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3', kernel_regularizer=l2(weight_decay))(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
-
-    # Block 4
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1', kernel_regularizer=l2(weight_decay))(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2', kernel_regularizer=l2(weight_decay))(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3', kernel_regularizer=l2(weight_decay))(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
-
-    # Block 5
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1', kernel_regularizer=l2(weight_decay))(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2', kernel_regularizer=l2(weight_decay))(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3', kernel_regularizer=l2(weight_decay))(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
 
 
 
