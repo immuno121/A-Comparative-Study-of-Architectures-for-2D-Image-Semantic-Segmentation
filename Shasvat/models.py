@@ -46,123 +46,112 @@ file_path = os.path.dirname(os.path.abspath(__file__))
 def VGGUnet( input_shape=None, weight_decay=0., batch_momentum=0
             , batch_shape=None, classes=21):
 
-    if batch_shape:
-        img_input = Input(batch_shape=batch_shape)
-        image_size = batch_shape[1:3]
-    else:
-        img_input = Input(shape=input_shape)
-        image_size = input_shape[0:2]
 
-    '''
-    input_height = 320
-    input_width = 320
-    img_input = Input(shape=(3,input_height,input_width))
-    '''
-
-    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(img_input)
-    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2')(x)
-    temp_x=x
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
-    f1 = x
-    print(f1.shape)
+    
+	x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(img_input)
+	x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2')(x)
+	temp_x=x
+	x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
+	f1 = x
+	print(f1.shape)
 	# Block 2
-    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1')(x)
-    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
-    f2 = x
-    print(f2.shape)
+	x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1')(x)
+	x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2')(x)
+	x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
+	f2 = x
+	print(f2.shape)
 	# Block 3
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1')(x)
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2')(x)
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
-    f3 = x
-    print(f3.shape)
+	x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1')(x)
+	x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2')(x)
+	x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3')(x)
+	x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
+	f3 = x
+	print(f3.shape)
 	# Block 4
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1')(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2')(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
-    f4 = x
-    print(f4.shape)
-   	# Block 5
-   # x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1')(x)
-   # x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2')(x)
-   # x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3')(x)
-   # x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool' )(x)
-   # f5 = x
-   # print(f5.shape)
-   # x = Flatten(name='flatten')(x)
-   # x = Dense(4096, activation='relu', name='fc1')(x)
-   # x = Dense(4096, activation='relu', name='fc2')(x)
-   # x = Dense( 1000 , activation='softmax', name='predictions')(x)
-   # print(x.shape)
-    #vgg  = Model(  img_input , x  )
-    #vgg.load_weights(VGG_Weights_path)
-    #weights_path = os.path.abspath('C:\\Users\\User\\Documents\\UMass Amherst\\Semester 2\\COMPSCI 690IV - Intelligent Visual Computing\\Project - Semantic Segmentation\\Keras-FCN\\Models\\FCN_Vgg16_32s\\vgg16.h5')
-    #vgg.load_weights(weights_path, by_name=True)
-    #levels = [f1 , f2 , f3 , f4 , f5 ]
+	x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1')(x)
+	x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2')(x)
+	x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3')(x)
+	x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
+	f4 = x
+	print(f4.shape)
+	# Block 5
+	# x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1')(x)
+	# x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2')(x)
+	# x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3')(x)
+	# x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool' )(x)
+	# f5 = x
+	# print(f5.shape)
+	# x = Flatten(name='flatten')(x)
+	# x = Dense(4096, activation='relu', name='fc1')(x)
+	# x = Dense(4096, activation='relu', name='fc2')(x)
+	# x = Dense( 1000 , activation='softmax', name='predictions')(x)
+	# print(x.shape)
+	#vgg  = Model(  img_input , x  )
+	#vgg.load_weights(VGG_Weights_path)
+	#weights_path = os.path.abspath('C:\\Users\\User\\Documents\\UMass Amherst\\Semester 2\\COMPSCI 690IV - Intelligent Visual Computing\\Project - Semantic Segmentation\\Keras-FCN\\Models\\FCN_Vgg16_32s\\vgg16.h5')
+	#vgg.load_weights(weights_path, by_name=True)
+	#levels = [f1 , f2 , f3 , f4 , f5 ]
 
-    o = f4
-    print("o=f4",o.shape)
-    o = ( ZeroPadding2D( (1,1)))(o)
-    print("0-padding",o.shape)
-    o = ( Conv2D(512, (3, 3), padding='valid'))(o)
-    print("conv2d",o.shape)
-    o = BatchNormalization()(o)
-    print("batch-norm",o.shape)
+	o = f4
+	print("o=f4",o.shape)
+	o = ( ZeroPadding2D( (1,1)))(o)
+	print("0-padding",o.shape)
+	o = ( Conv2D(512, (3, 3), padding='valid'))(o)
+	print("conv2d",o.shape)
+	o = BatchNormalization()(o)
+	print("batch-norm",o.shape)
 
-   # o = (UpSampling2D( (2,2)))(o)
-    o=Conv2DTranspose(256,kernel_size=(2,2),strides=(2,2),padding='same')(o)	
-    print("upsample",o.shape)
-    print("f3",f3.shape)
-    o = ( concatenate([ o ,f3],axis=-1 )  )
-    o = ( ZeroPadding2D( (1,1)))(o)
-    o = ( Conv2D( 256, (3, 3), padding='valid'))(o)
-    o = ( BatchNormalization())(o)
-    o=Conv2DTranspose(128,kernel_size=(2,2),strides=(2,2),padding='same')(o)	
+	# o = (UpSampling2D( (2,2)))(o)
+	o=Conv2DTranspose(256,kernel_size=(2,2),strides=(2,2),padding='same')(o)	
+	print("upsample",o.shape)
+	print("f3",f3.shape)
+	o = ( concatenate([ o ,f3],axis=-1 )  )
+	o = ( ZeroPadding2D( (1,1)))(o)
+	o = ( Conv2D( 256, (3, 3), padding='valid'))(o)
+	o = ( BatchNormalization())(o)
+	o=Conv2DTranspose(128,kernel_size=(2,2),strides=(2,2),padding='same')(o)	
 
-   # o = (UpSampling2D( (2,2)))(o)
-    o = ( concatenate([o,f2],axis=-1 ) )
-    o = ( ZeroPadding2D((1,1)))(o)
-    o = ( Conv2D( 128 , (3, 3), padding='valid') )(o)
-    o = ( BatchNormalization())(o)
-    o=Conv2DTranspose(64,kernel_size=(2,2),strides=(2,2),padding='same')(o)	
+	# o = (UpSampling2D( (2,2)))(o)
+	o = ( concatenate([o,f2],axis=-1 ) )
+	o = ( ZeroPadding2D((1,1)))(o)
+	o = ( Conv2D( 128 , (3, 3), padding='valid') )(o)
+	o = ( BatchNormalization())(o)
+	o=Conv2DTranspose(64,kernel_size=(2,2),strides=(2,2),padding='same')(o)	
 
-   # o = (UpSampling2D( (2,2)))(o)
-    o = ( concatenate([o,f1],axis=-1 ) )
-    o = ( ZeroPadding2D((1,1)))(o)
-    o = ( Conv2D( 64 , (3, 3), padding='valid'))(o)
-    o = ( BatchNormalization())(o)
-    o=Conv2DTranspose(64,kernel_size=(2,2),strides=(2,2),padding='same')(o)	
-     	
-   # o = (UpSampling2D( (2,2)))(o)
-    print("o", o.shape)
+	# o = (UpSampling2D( (2,2)))(o)
+	o = ( concatenate([o,f1],axis=-1 ) )
+	o = ( ZeroPadding2D((1,1)))(o)
+	o = ( Conv2D( 64 , (3, 3), padding='valid'))(o)
+	o = ( BatchNormalization())(o)
+	o=Conv2DTranspose(64,kernel_size=(2,2),strides=(2,2),padding='same')(o)	
 
-    n_classes=classes
-    o =  Conv2D( n_classes , (3, 3) , padding='same')( o )
-    o_shape = Model(img_input , o ).output_shape
-    print("o shape",o_shape)
-    outputHeight = o_shape[1]
-    print("output Height = ",outputHeight);
-    outputWidth = o_shape[2]
-    print("output Width =",outputWidth)
-    #outputHeight = 320
-    #outputWidth = 320
+	# o = (UpSampling2D( (2,2)))(o)
+	print("o", o.shape)
 
-    o = (Reshape((  n_classes , outputHeight*outputWidth   )))(o)
-    o = (Permute((2, 1)))(o)
-    o = (Reshape((  outputHeight,outputWidth,-1  )))(o)
-    o = (Activation('softmax'))(o)
-    model = Model( img_input , o )
-    model.outputWidth = outputWidth
-    model.outputHeight = outputHeight
-    #weights_path = os.path.abspath('C:\\Users\\User\\Documents\\UMass Amherst\\Semester 2\\COMPSCI 690IV - Intelligent Visual Computing\\Project - Semantic Segmentation\\Keras-FCN\\Models\\FCN_Vgg16_32s\\vgg16.h5')
-    weights_path='Models/FCN_Vgg16_8s/fcn_vgg16_weights_tf_dim_ordering_tf_kernels.h5'
-    model.load_weights(weights_path, by_name=True)
+	n_classes=classes
+	o =  Conv2D( n_classes , (3, 3) , padding='same')( o )
+	o_shape = Model(img_input , o ).output_shape
+	print("o shape",o_shape)
+	outputHeight = o_shape[1]
+	print("output Height = ",outputHeight);
+	outputWidth = o_shape[2]
+	print("output Width =",outputWidth)
+	#outputHeight = 320
+	#outputWidth = 320
+
+	o = (Reshape((  n_classes , outputHeight*outputWidth   )))(o)
+	o = (Permute((2, 1)))(o)
+	o = (Reshape((  outputHeight,outputWidth,-1  )))(o)
+	o = (Activation('softmax'))(o)
+	model = Model( img_input , o )
+	model.outputWidth = outputWidth
+	model.outputHeight = outputHeight
+	#weights_path = os.path.abspath('C:\\Users\\User\\Documents\\UMass Amherst\\Semester 2\\COMPSCI 690IV - Intelligent Visual Computing\\Project - Semantic Segmentation\\Keras-FCN\\Models\\FCN_Vgg16_32s\\vgg16.h5')
+	weights_path='Models/FCN_Vgg16_8s/fcn_vgg16_weights_tf_dim_ordering_tf_kernels.h5'
+	model.load_weights(weights_path, by_name=True)
 
 
-    return model
+	return model
 
 
 #IMAGE_ORDERING = 'channels_first'
@@ -453,6 +442,12 @@ def FCN_Vgg16_8s(input_shape=None, weight_decay=0., batch_momentum=0.9, batch_sh
 
 	p5 = h
 	
+	x=h
+	x = Conv2D(4096, (7, 7), activation='relu', padding='same', name='fc1', kernel_regularizer=l2(weight_decay))(x)
+	x = Dropout(0.5)(x)
+	x = Conv2D(4096, (1, 1), activation='relu', padding='same', name='fc2', kernel_regularizer=l2(weight_decay))(x)
+	x = Dropout(0.5)(x)
+ 	p5=x
 	p5 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal',activation='linear',kernel_regularizer=l2(weight_decay)))(p5)
 	#print(o.shape)
 	p5 = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(p5)
