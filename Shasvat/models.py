@@ -25,8 +25,8 @@ from keras.layers.core import Activation
 from keras.layers.convolutional import Convolution2D, Deconvolution2D, Cropping2D
 from keras.models import Model
 from keras.engine.topology import Layer
-from keras.utils.layer_utils import layer_from_config
-from keras.utils import np_utils, generic_utils
+#from keras.utils.layer_utils import layer_from_config
+#from keras.utils import np_utils, generic_utils
 from keras import backend as K
 from keras.applications.vgg16 import VGG16, preprocess_input
 
@@ -396,19 +396,19 @@ def FCN_Vgg16_8s(input_shape=None, weight_decay=0., batch_momentum=0.9, batch_sh
     # assert input_width%32 == 0
 
     # https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_th_dim_ordering_th_kernels.h5
-    if batch_shape:
-        img_input = Input(batch_shape=batch_shape)
-        image_size = batch_shape[1:3]
-    else:
-        img_input = Input(shape=input_shape)
-        image_size = input_shape[0:2]
+        if batch_shape:
+          img_input = Input(batch_shape=batch_shape)
+          image_size = batch_shape[1:3]
+        else:
+          img_input = Input(shape=input_shape)
+          image_size = input_shape[0:2]
 
    
     
-    vgg16 = VGG16(include_top=False,
+        vgg16 = VGG16(include_top=False,
                            weights='imagenet',
                            input_tensor=None,
-                           input_shape=(img_size[0], img_size[1],3))
+                           input_shape=(image_size[0], image_size[1],3))
 
     
         #(samples, channels, rows, cols)
@@ -481,7 +481,7 @@ def FCN_Vgg16_8s(input_shape=None, weight_decay=0., batch_momentum=0.9, batch_sh
 	o = (Reshape((-1, outputHeight * outputWidth)))(o)
 	o = (Permute((2, 1)))(o)
 	o = (Reshape((outputHeight , outputWidth,-1)))(o)
-	o = (Activation('softmax'))(o)
+	#o = (Activation('softmax'))(o)
 	model = Model(img_input, o)
 	model.outputWidth = outputWidth
 	model.outputHeight = outputHeight
