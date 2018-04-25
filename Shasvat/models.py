@@ -48,88 +48,110 @@ def VGGUnet( input_shape=None, weight_decay=0., batch_momentum=0
 
 
     
-	x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(img_input)
-	x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2')(x)
-	temp_x=x
-	x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
-	f1 = x
-	print(f1.shape)
-	# Block 2
-	x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1')(x)
-	x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2')(x)
-	x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
-	f2 = x
-	print(f2.shape)
-	# Block 3
-	x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1')(x)
-	x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2')(x)
-	x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3')(x)
-	x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
-	f3 = x
-	print(f3.shape)
-	# Block 4
-	x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1')(x)
-	x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2')(x)
-	x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3')(x)
-	x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
-	f4 = x
-	print(f4.shape)
-	# Block 5
-	# x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1')(x)
-	# x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2')(x)
-	# x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3')(x)
-	# x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool' )(x)
-	# f5 = x
-	# print(f5.shape)
-	# x = Flatten(name='flatten')(x)
-	# x = Dense(4096, activation='relu', name='fc1')(x)
-	# x = Dense(4096, activation='relu', name='fc2')(x)
-	# x = Dense( 1000 , activation='softmax', name='predictions')(x)
-	# print(x.shape)
-	#vgg  = Model(  img_input , x  )
-	#vgg.load_weights(VGG_Weights_path)
-	#weights_path = os.path.abspath('C:\\Users\\User\\Documents\\UMass Amherst\\Semester 2\\COMPSCI 690IV - Intelligent Visual Computing\\Project - Semantic Segmentation\\Keras-FCN\\Models\\FCN_Vgg16_32s\\vgg16.h5')
-	#vgg.load_weights(weights_path, by_name=True)
-	#levels = [f1 , f2 , f3 , f4 , f5 ]
+	if batch_shape:
+          img_input = Input(batch_shape=batch_shape)
+          image_size = batch_shape[1:3]
+        else:
+          img_input = Input(shape=input_shape)
+          image_size = input_shape[0:2]
 
-	o = f4
-	print("o=f4",o.shape)
-	o = ( ZeroPadding2D( (1,1)))(o)
-	print("0-padding",o.shape)
-	o = ( Conv2D(512, (3, 3), padding='valid'))(o)
-	print("conv2d",o.shape)
-	o = BatchNormalization()(o)
-	print("batch-norm",o.shape)
+   
+    
+        vgg16 = VGG16(include_top=False,
+                           weights='imagenet',
+                           input_tensor=None,
+                           input_shape=(image_size[0], image_size[1],3))
 
-	# o = (UpSampling2D( (2,2)))(o)
-	o=Conv2DTranspose(256,kernel_size=(2,2),strides=(2,2),padding='same')(o)	
-	print("upsample",o.shape)
-	print("f3",f3.shape)
-	o = ( concatenate([ o ,f3],axis=-1 )  )
-	o = ( ZeroPadding2D( (1,1)))(o)
-	o = ( Conv2D( 256, (3, 3), padding='valid'))(o)
-	o = ( BatchNormalization())(o)
-	o=Conv2DTranspose(128,kernel_size=(2,2),strides=(2,2),padding='same')(o)	
+    
+        #(samples, channels, rows, cols)
+	#ip = Input(shape=(3, self.img_height, self.img_width))
+	h = vgg16.layers[1](img_input)
+	h = vgg16.layers[2](h)
+	h = vgg16.layers[3](h)
+	p1=h	
+	h = vgg16.layers[4](h)
+	h = vgg16.layers[5](h)
+	h = vgg16.layers[6](h)
+	p2=h
+	h = vgg16.layers[7](h)
+	h = vgg16.layers[8](h)
+	h = vgg16.layers[9](h)
+	h = vgg16.layers[10](h)
 
-	# o = (UpSampling2D( (2,2)))(o)
-	o = ( concatenate([o,f2],axis=-1 ) )
-	o = ( ZeroPadding2D((1,1)))(o)
-	o = ( Conv2D( 128 , (3, 3), padding='valid') )(o)
-	o = ( BatchNormalization())(o)
-	o=Conv2DTranspose(64,kernel_size=(2,2),strides=(2,2),padding='same')(o)	
+	# split layer
+	p3 = h
 
-	# o = (UpSampling2D( (2,2)))(o)
-	o = ( concatenate([o,f1],axis=-1 ) )
-	o = ( ZeroPadding2D((1,1)))(o)
-	o = ( Conv2D( 64 , (3, 3), padding='valid'))(o)
-	o = ( BatchNormalization())(o)
-	o=Conv2DTranspose(64,kernel_size=(2,2),strides=(2,2),padding='same')(o)	
+	h = vgg16.layers[11](h)
+	h = vgg16.layers[12](h)
+	h = vgg16.layers[13](h)
+	h = vgg16.layers[14](h)
 
+	# split layer
+	p4 = h
+
+	h = vgg16.layers[15](h)
+	h = vgg16.layers[16](h)
+	h = vgg16.layers[17](h)
+	h = vgg16.layers[18](h)
+
+	p5 = h
+	
+	x=h
+	x = Conv2D(4096, (7, 7), activation='relu', padding='same', name='fc1', kernel_regularizer=l2(weight_decay))(x)
+	x = Dropout(0.5)(x)
+	x = Conv2D(4096, (1, 1), activation='relu', padding='same', name='fc2', kernel_regularizer=l2(weight_decay))(x)
+	x = Dropout(0.5)(x)
+ 	#p5=x
+	x = (Conv2D(classes, (1, 1), kernel_initializer='he_normal',activation='linear',kernel_regularizer=l2(weight_decay)))(x)
+	#print(o.shape)
+	x = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(x)
+	#print(o.shape)
+	#imshow(o)
+	o=x
+	K.print_tensor(o)
+	o2 = p4
+	
+
+
+
+
+
+###########################
+	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
+	#print(o2.shape)
+	o, o2 = crop(o, o2, img_input)
+	#print(o.shape)
+	#print(o2.shape)
+	o =(concatenate([ o ,o2],axis=-1) 
+
+
+	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+	o2 = p3
+	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
+	o2, o = crop(o2, o, img_input)
+	o = (concatenate([ o ,o2],axis=-1 )	
+
+	#o = Conv2DTranspose(classes, kernel_size=(16, 16), strides=(8, 8), use_bias=False)(o)
+	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+	o2 = p2
+	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
+	o2, o = crop(o2, o, img_input)
+	o = (concatenate([ o ,o2],axis=-1 )	
+	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+
+
+	o2 = p1
+	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
+	o2, o = crop(o2, o, img_input)
+	o = (concatenate([ o ,o2],axis=-1 )	
+	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+
+
+#########3
 	# o = (UpSampling2D( (2,2)))(o)
 	print("o", o.shape)
 
-	n_classes=classes
-	o =  Conv2D( n_classes , (3, 3) , padding='same')( o )
+	
 	o_shape = Model(img_input , o ).output_shape
 	print("o shape",o_shape)
 	outputHeight = o_shape[1]
@@ -139,16 +161,16 @@ def VGGUnet( input_shape=None, weight_decay=0., batch_momentum=0
 	#outputHeight = 320
 	#outputWidth = 320
 
-	o = (Reshape((  n_classes , outputHeight*outputWidth   )))(o)
+	o = (Reshape((  classes , outputHeight*outputWidth   )))(o)
 	o = (Permute((2, 1)))(o)
 	o = (Reshape((  outputHeight,outputWidth,-1  )))(o)
-	o = (Activation('softmax'))(o)
+	#o = (Activation('softmax'))(o)
 	model = Model( img_input , o )
 	model.outputWidth = outputWidth
 	model.outputHeight = outputHeight
 	#weights_path = os.path.abspath('C:\\Users\\User\\Documents\\UMass Amherst\\Semester 2\\COMPSCI 690IV - Intelligent Visual Computing\\Project - Semantic Segmentation\\Keras-FCN\\Models\\FCN_Vgg16_32s\\vgg16.h5')
-	weights_path='Models/FCN_Vgg16_8s/fcn_vgg16_weights_tf_dim_ordering_tf_kernels.h5'
-	model.load_weights(weights_path, by_name=True)
+	#weights_path='Models/FCN_Vgg16_8s/fcn_vgg16_weights_tf_dim_ordering_tf_kernels.h5'
+	#model.load_weights(weights_path, by_name=True)
 
 
 	return model
@@ -160,206 +182,217 @@ def VggIFCN(input_shape=None, weight_decay=0., batch_momentum=0.9, batch_shape=N
     # assert input_height%32 == 0
     # assert input_width%32 == 0
 
-    # https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_th_dim_ordering_th_kernels.h5
-    if batch_shape:
-        img_input = Input(batch_shape=batch_shape)
-        image_size = batch_shape[1:3]
-    else:
-        img_input = Input(shape=input_shape)
-        image_size = input_shape[0:2]
+	if batch_shape:
+          img_input = Input(batch_shape=batch_shape)
+          image_size = batch_shape[1:3]
+        else:
+          img_input = Input(shape=input_shape)
+          image_size = input_shape[0:2]
 
-    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(
-        img_input)
-    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
-    f1 = x
-    # Block 2
-    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1')(x)
-    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
-    f2 = x
+   
+    
+        vgg16 = VGG16(include_top=False,
+                           weights='imagenet',
+                           input_tensor=None,
+                           input_shape=(image_size[0], image_size[1],3))
 
-    # Block 3
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1')(x)
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2')(x)
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
-    f3 = x
+    
+        #(samples, channels, rows, cols)
+	#ip = Input(shape=(3, self.img_height, self.img_width))
+	h = vgg16.layers[1](img_input)
+	h = vgg16.layers[2](h)
+	h = vgg16.layers[3](h)
+	h = vgg16.layers[4](h)
+	h = vgg16.layers[5](h)
+	h = vgg16.layers[6](h)
+	h = vgg16.layers[7](h)
+	h = vgg16.layers[8](h)
+	h = vgg16.layers[9](h)
+	h = vgg16.layers[10](h)
 
-    # Block 4
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1')(x)
-    var_3_1 = x
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2')(x)
-    var_3_2 = x
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3')(x)
-    var_3_3 = x
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
-    f4 = x
+	# split layer
+	p3 = h
 
-    # Block 5
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1')(x)
-    var_4_1 = x
-    print("var4.1", var_4_1.shape)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2')(x)
-    var_4_2 = x
-    print("var4.2", var_4_2.shape)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3')(x)
-    var_4_3 = x
-    print("var4.3", var_4_3.shape)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
-    f5 = x
+	h = vgg16.layers[11](h)
+	var_3_1=h
+	h = vgg16.layers[12](h)
+	var_3_2=h
+	h = vgg16.layers[13](h)
+	var_3_3=h
+	h = vgg16.layers[14](h)
 
-    x = Flatten(name='flatten')(x)
-    x = Dense(4096, activation='relu', name='fc1')(x)
-    x = Dense(4096, activation='relu', name='fc2')(x)
-    x = Dense(1000, activation='softmax', name='predictions')(x)
+	# split layer
+	p4 = h
 
-    # vgg = Model(img_input, x)
-    # weights_path = 'Models/FCN_Vgg16_8s/vgg16_weights_th_dim_ordering_th_kernels.h5'
-    # vgg.load_weights(weights_path)
+	h = vgg16.layers[15](h)
+	var_4_1=h
+	h = vgg16.layers[16](h)
+	var_4_2=h
+	h = vgg16.layers[17](h)
+	var_4_3=h
+	h = vgg16.layers[18](h)
 
-    o = f5
+	p5 = h
+	
+	x=h
+	x = Conv2D(4096, (7, 7), activation='relu', padding='same', name='fc1', kernel_regularizer=l2(weight_decay))(x)
+	x = Dropout(0.5)(x)
+	x = Conv2D(4096, (1, 1), activation='relu', padding='same', name='fc2', kernel_regularizer=l2(weight_decay))(x)
+	x = Dropout(0.5)(x)
+ 	#p5=x
+	x = (Conv2D(classes, (1, 1), kernel_initializer='he_normal',activation='linear',kernel_regularizer=l2(weight_decay)))(x)
+	#print(o.shape)
+	x = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(x)
+	#print(o.shape)
+	#imshow(o)
+	o=x
+	K.print_tensor(o)
+	o2 = p4
+	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
+	#print(o2.shape)
+	o, o2 = crop(o, o2, img_input)
+	#print(o.shape)
+	#print(o2.shape)
+	o = Add()([o, o2])
+	
+	var_4_1 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(var_4_1)
+    	var_4_2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(var_4_2)
+    	var_4_3 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(var_4_3)
+	
+	o = Add()([o, var_4_1])
+    	o = Add()([o, var_4_2])
+    	o = Add()([o, var_4_3])
+   	temp_20 = o  # 20X20
 
-    o = (Conv2D(4096, (7, 7), activation='relu', padding='same'))(o)
-    o = Dropout(0.5)(o)
-    o = (Conv2D(4096, (1, 1), activation='relu', padding='same'))(o)
-    o = Dropout(0.5)(o)
+    	o = BatchNormalization()(o)
 
-    o = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o)
-    # o:size=10X10
-    o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
-    # o:size=22X22
-    o2 = f4
-    o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
-    # o2:size=20X20
-    o, o2 = crop(o, o2, img_input)
-    # both are 20X20
-
-    o = Add()([o, o2])
-
-    var_4_1 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(var_4_1)
-    var_4_2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(var_4_2)
-    var_4_3 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(var_4_3)
-
-    # all are of sizes 20X20
-
-    o = Add()([o, var_4_1])
-    o = Add()([o, var_4_2])
-    o = Add()([o, var_4_3])
-    temp_20 = o  # 20X20
-    o = BatchNormalization()(o)
-    o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
-    # o:size=44X44
-
-    o2 = f3
-
-    o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
-    # o2:size=40X40
-    o, o2 = crop(o, o2, img_input)
-
-    # Both are 40X40
-    o = Add()([o, o2])
-    var_3_1 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(var_3_1)
-    var_3_2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(var_3_2)
-    var_3_3 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(var_3_3)
+	
+	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+	
+	o2 = p3
+	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
+	o2, o = crop(o2, o, img_input)
+	#o = Add()([o2, o])	
+	
+	o = Add()([o, o2])
+ 	var_3_1 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(var_3_1)
+    	var_3_2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(var_3_2)
+    	var_3_3 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(var_3_3)
 
     # all are of sizes 20X20
 
-    o = Add()([o, var_3_1])
-    o = Add()([o, var_3_2])
-    o = Add()([o, var_3_3])
+    	o = Add()([o, var_3_1])
+   	o = Add()([o, var_3_2])
+    	o = Add()([o, var_3_3])
     #o = BatchNormalization()(o)
-    temp_40 = o  # 20X20
+    	temp_40 = o  # 20X20
+	
 
-    # print(o.shape)
 
-    # print(o.shape)
-    # imshow(o)
-    K.print_tensor(o)
-    #o=BatchNormalization()(o)
-    #########lets make a context network:#############################################
-    o = f5
 
-    #o = (Conv2D(4096, (7, 7), activation='relu', padding='same'))(o)
-    #o = Dropout(0.5)(o)
-    # o = (Conv2D(4096, (1, 1), activation='relu', padding='same'))(o)
-    #o = Dropout(0.5)(o)
 
-    #o = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o)
+	 #########lets make a context network:#############################################
+    	o = p5
 
-    o = (Conv2D(512, (5, 5), kernel_initializer='RandomNormal', padding='same'))(o)
-    o = BatchNormalization()(o)
-    o = Activation('relu')(o)
-    temp_c1 = o
+    	#o = (Conv2D(4096, (7, 7), activation='relu', padding='same'))(o)
+    	#o = Dropout(0.5)(o)
+    	# o = (Conv2D(4096, (1, 1), activation='relu', padding='same'))(o)
+    	#o = Dropout(0.5)(o)
 
-    o = (Conv2D(512, (5, 5), kernel_initializer='RandomNormal', padding='same'))(o)
-    o = BatchNormalization()(o)
-    o = Activation('relu')(o)
-    temp_c2 = o
+    	#o = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o)
 
-    o = (Conv2D(512, (5, 5), kernel_initializer='RandomNormal', padding='same'))(o)
-    o = BatchNormalization()(o)
-    o = Activation('relu')(o)
-    temp_c3 = o
+    	o = (Conv2D(512, (5, 5), kernel_initializer='RandomNormal', padding='same'))(o)
+    	o = BatchNormalization()(o)
+	
+	o = Activation('relu')(o)
+    	temp_c1 = o
 
-    o = (Conv2D(512, (5, 5), kernel_initializer='RandomNormal', padding='same'))(o)
-    o = BatchNormalization()(o)
-    o = Activation('relu')(o)
-    temp_c4 = o
+    	o = (Conv2D(512, (5, 5), kernel_initializer='RandomNormal', padding='same'))(o)
+   	o = BatchNormalization()(o)
+    	o = Activation('relu')(o)
+    	temp_c2 = o
 
-    o = (Conv2D(512, (5, 5), kernel_initializer='RandomNormal', padding='same'))(o)
-    o = BatchNormalization()(o)
-    o = Activation('relu')(o)
-    temp_c5 = o
+    	o = (Conv2D(512, (5, 5), kernel_initializer='RandomNormal', padding='same'))(o)
+    	o = BatchNormalization()(o)
+    	o = Activation('relu')(o)
+    	temp_c3 = o
 
-    o = (Conv2D(512, (5, 5), kernel_initializer='RandomNormal', padding='same'))(o)
-    o = BatchNormalization()(o)
-    o = Activation('relu')(o)
-    temp_c6 = o
+    	o = (Conv2D(512, (5, 5), kernel_initializer='RandomNormal', padding='same'))(o)
+    	o = BatchNormalization()(o)
+    	o = Activation('relu')(o)
+    	temp_c4 = o
 
-    o = Add()([o, temp_c1])
-    o = Add()([o, temp_c2])
-    o = Add()([o, temp_c3])
-    o = Add()([o, temp_c4])
-    o = Add()([o, temp_c5])
-    o = Add()([o, temp_c6])
+    	o = (Conv2D(512, (5, 5), kernel_initializer='RandomNormal', padding='same'))(o)
 
-    o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
-    o, temp_20 = crop(o, temp_20, img_input)
-    o = Add()([o, temp_20])
+	o = BatchNormalization()(o)
+    	o = Activation('relu')(o)
+    	temp_c6 = o
 
-    temp_20 = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(temp_20)
-    o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+    	o = Add()([o, temp_c1])
+    	o = Add()([o, temp_c2])
+    	o = Add()([o, temp_c3])
+    	o = Add()([o, temp_c4])
+    	o = Add()([o, temp_c5])
+    	o = Add()([o, temp_c6])
 
-    temp_20, temp_40 = crop(temp_20, temp_40, img_input)
-    o, temp_40 = crop(o, temp_40, img_input)
+    	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+    	o, temp_20 = crop(o, temp_20, img_input)
 
-    o = Add()([o, temp_40])
-    o = Add()([o, temp_20])
+
+	o = Add()([o, temp_20])
+
+    	temp_20 = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(temp_20)
+    	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+
+    	temp_20, temp_40 = crop(temp_20, temp_40, img_input)
+    	o, temp_40 = crop(o, temp_40, img_input)
+
+    	o = Add()([o, temp_40])
+    	o = Add()([o, temp_20])
 
     ####################################################################################
 
-    # o = Conv2DTranspose(classes, kernel_size=(16, 16), strides=(8, 8), use_bias=False)(o)
-    o = Conv2DTranspose(classes, kernel_size=(8, 8), strides=(8, 8), use_bias=False)(o)
+	
 
-    o_shape = Model(img_input, o).output_shape
 
-    outputHeight = o_shape[1]
-    outputWidth = o_shape[2]
 
-    o = (Reshape((-1, outputHeight * outputWidth)))(o)
-    o = (Permute((2, 1)))(o)
-    o = (Reshape((outputHeight, outputWidth, -1)))(o)
-    o = (Activation('softmax'))(o)
-    model = Model(img_input, o)
-    model.outputWidth = outputWidth
-    model.outputHeight = outputHeight
-    weights_path = 'Models/FCN_Vgg16_8s/fcn_vgg16_weights_tf_dim_ordering_tf_kernels.h5'
-    model.load_weights(weights_path, by_name=True)
-    # return model
 
-    return model
-#################################################################################
+
+
+	#o = Conv2DTranspose(classes, kernel_size=(16, 16), strides=(8, 8), use_bias=False)(o)
+	o = Conv2DTranspose(classes, kernel_size=(8, 8), strides=(8, 8), use_bias=False)(o)
+
+	o_shape = Model(img_input, o).output_shape
+
+	outputHeight = o_shape[1]
+	outputWidth = o_shape[2]
+
+	o = (Reshape((-1, outputHeight * outputWidth)))(o)
+	o = (Permute((2, 1)))(o)
+	o = (Reshape((outputHeight , outputWidth,-1)))(o)
+	#o = (Activation('softmax'))(o)
+	model = Model(img_input, o)
+	model.outputWidth = outputWidth
+	model.outputHeight = outputHeight
+	#weights_path = 'Models/FCN_Vgg16_8s/fcn_vgg16_weights_tf_dim_ordering_tf_kernels.h5'
+	#model.load_weights(weights_path, by_name=True)
+	#return model
+
+	return model
+
+
+
+
+
+	
+	
+	# vgg = Model(img_input, x)
+	# weights_path = 'Models/FCN_Vgg16_8s/vgg16_weights_th_dim_ordering_th_kernels.h5'
+	# vgg.load_weights(weights_path)
+
+	
+	
+	#################################################################################
 
 # crop o1 wrt o2
 def crop(o1, o2, i):
@@ -592,7 +625,7 @@ def AtrousFCN_Vgg16_16s(input_shape=None, weight_decay=0., batch_momentum=0.9, b
     x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1', kernel_regularizer=l2(weight_decay))(img_input)
     x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2', kernel_regularizer=l2(weight_decay))(x)
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
-
+	
     # Block 2
     x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1', kernel_regularizer=l2(weight_decay))(x)
     x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2', kernel_regularizer=l2(weight_decay))(x)
