@@ -1,4 +1,0 @@
-Using TensorFlow backend.
-WARNING:tensorflow:From /cm/shared/apps/python/2.7.14-1804/lib/python2.7/site-packages/tensorflow/contrib/learn/python/learn/datasets/base.py:198: retry (from tensorflow.contrib.learn.python.learn.datasets.base) is deprecated and will be removed in a future version.
-Instructions for updating:
-Use the retry module or similar alternatives.

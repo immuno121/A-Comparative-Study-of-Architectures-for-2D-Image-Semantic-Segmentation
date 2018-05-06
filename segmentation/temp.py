@@ -1,2 +1,0 @@
-
-from PIL import Image
