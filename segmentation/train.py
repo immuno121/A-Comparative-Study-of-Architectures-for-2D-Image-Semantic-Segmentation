@@ -272,7 +272,7 @@ def train(batch_size, epochs, lr_base, lr_power, weight_decay, classes,
     #y_enp=np.reshape(y_en,(320,320,1))
     y_en = y_en[..., np.newaxis]
 
-    model.fit(X, y_en, epochs=100, batch_size=16,callbacks=callbacks)
+    model.fit(X, y_en, epochs=50, batch_size=16,callbacks=callbacks)
 
 
     '''
