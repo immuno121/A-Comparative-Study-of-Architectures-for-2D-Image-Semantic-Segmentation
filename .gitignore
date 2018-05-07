@@ -9,11 +9,6 @@ run_logs/*
 
 segmentation/run_logs/*
 segmentation/run.sh
-segmentation/Models/FCN_Vgg_32s/res/*
-segmentation/Models/FCN_Vgg_16s/res/*
-segmentation/Models/FCN_Vgg_8s/res/*
-segmentation/Models/VGGUnet/res/*
-segmentation/Models/VggIFCN/res/*
 segmentation/Models/FCN_Vgg_32s/*.h5
 segmentation/Models/FCN_Vgg_32s/*.hdf5
 segmentation/Models/FCN_Vgg_32s/logs/*

@@ -309,8 +309,8 @@ if __name__ == '__main__':
     #model_name = 'Atrous_DenseNet'
     #model_name = 'DenseNet_FCN'
    # model_name='FCN_Vgg16_8s'
-    #model_name='FCN_Vgg16_16s'
-    model_name='VggIFCN'
+    model_name='FCN_Vgg16_16s'
+    #model_name='VggIFCN'
    # model_name='VGGUnet'
     batch_size = 16
     batchnorm_momentum = 0.95
