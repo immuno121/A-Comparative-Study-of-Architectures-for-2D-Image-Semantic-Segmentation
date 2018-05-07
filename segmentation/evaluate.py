@@ -138,10 +138,10 @@ def evaluate(model_name, weight_file, image_size, nb_classes, batch_size, val_fi
 if __name__ == '__main__':
     # model_name = 'Atrous_DenseNet'
     model_name = 'AtrousFCN_Resnet50_16s'
-    #model_name='FCN_Vgg16_16s'
+    model_name='FCN_Vgg16_16s'
     # model_name = 'DenseNet_FCN'
-    model_name='VGGUnet'
-   # model_name='VggIFCN'
+    #model_name='VGGUnet'
+    #model_name='VggIFCN'
     weight_file = 'checkpoint_weights.hdf5'
     #weight_file = 'fcn_vgg16_weights_tf_dim_ordering_tf_kernels.h5'
     image_size = (512, 512)

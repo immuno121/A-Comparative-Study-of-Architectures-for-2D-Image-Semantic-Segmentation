@@ -104,8 +104,8 @@ def VGGUnet( input_shape=None, weight_decay=0., batch_momentum=0
  	#p5=x
 	x = (Conv2D(classes, (1, 1), kernel_initializer='he_normal',activation='linear',kernel_regularizer=l2(weight_decay)))(x)
 	#print(o.shape)
-	#x = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(x)
-	x = BilinearUpSampling2D(size=(2, 2))(x)
+	x = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(x)
+	#x = BilinearUpSampling2D(size=(2, 2))(x)
         #print(o.shape)
 	#imshow(o)
 	o=x
@@ -120,35 +120,35 @@ def VGGUnet( input_shape=None, weight_decay=0., batch_momentum=0
 ###########################
 	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
 	#print(o2.shape)
-	#o, o2 = crop(o, o2, img_input)
+	o, o2 = crop(o, o2, img_input)
 	#print(o.shape)
 	#print(o2.shape)
 	o =(concatenate([ o ,o2],axis=-1)) 
 
 
-	#o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
-	o = BilinearUpSampling2D(size=(2, 2))(o)
+	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+	#o = BilinearUpSampling2D(size=(2, 2))(o)
         o2 = p3
 	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
-	#o2, o = crop(o2, o, img_input)
+	o2, o = crop(o2, o, img_input)
 	o = (concatenate([ o ,o2],axis=-1 ))	
 
 	#o = Conv2DTranspose(classes, kernel_size=(16, 16), strides=(8, 8), use_bias=False)(o)
-	#o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
-	o = BilinearUpSampling2D(size=(2, 2))(o)
+	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+	#o = BilinearUpSampling2D(size=(2, 2))(o)
         o2 = p2
 	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
-	#o2, o = crop(o2, o, img_input)
+	o2, o = crop(o2, o, img_input)
 	o = (concatenate([ o ,o2],axis=-1 ))	
-	#o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
-        o = BilinearUpSampling2D(size=(2, 2))(o)
+	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+        #o = BilinearUpSampling2D(size=(2, 2))(o)
 
 	o2 = p1
 	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
-	#o2, o = crop(o2, o, img_input)
+	o2, o = crop(o2, o, img_input)
 	o = (concatenate([ o ,o2],axis=-1 ))	
-	#o = Conv2DTranspose(classes, kernel_size=(2, 2), strides=(2, 2), use_bias=False)(o)
-	o = BilinearUpSampling2D(size=(2, 2))(o)
+	o = Conv2DTranspose(classes, kernel_size=(2, 2), strides=(2, 2), use_bias=False)(o)
+	#o = BilinearUpSampling2D(size=(2, 2))(o)
         o = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o)
 
 
