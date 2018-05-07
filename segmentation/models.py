@@ -104,8 +104,9 @@ def VGGUnet( input_shape=None, weight_decay=0., batch_momentum=0
  	#p5=x
 	x = (Conv2D(classes, (1, 1), kernel_initializer='he_normal',activation='linear',kernel_regularizer=l2(weight_decay)))(x)
 	#print(o.shape)
-	x = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(x)
-	#print(o.shape)
+	#x = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(x)
+	x = BilinearUpSampling2D(size=(2, 2))(x)
+        #print(o.shape)
 	#imshow(o)
 	o=x
 	K.print_tensor(o)
@@ -119,32 +120,36 @@ def VGGUnet( input_shape=None, weight_decay=0., batch_momentum=0
 ###########################
 	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
 	#print(o2.shape)
-	o, o2 = crop(o, o2, img_input)
+	#o, o2 = crop(o, o2, img_input)
 	#print(o.shape)
 	#print(o2.shape)
 	o =(concatenate([ o ,o2],axis=-1)) 
 
 
-	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
-	o2 = p3
+	#o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+	o = BilinearUpSampling2D(size=(2, 2))(o)
+        o2 = p3
 	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
-	o2, o = crop(o2, o, img_input)
+	#o2, o = crop(o2, o, img_input)
 	o = (concatenate([ o ,o2],axis=-1 ))	
 
 	#o = Conv2DTranspose(classes, kernel_size=(16, 16), strides=(8, 8), use_bias=False)(o)
-	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
-	o2 = p2
+	#o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+	o = BilinearUpSampling2D(size=(2, 2))(o)
+        o2 = p2
 	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
-	o2, o = crop(o2, o, img_input)
+	#o2, o = crop(o2, o, img_input)
 	o = (concatenate([ o ,o2],axis=-1 ))	
-	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
-
+	#o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+        o = BilinearUpSampling2D(size=(2, 2))(o)
 
 	o2 = p1
 	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
-	o2, o = crop(o2, o, img_input)
+	#o2, o = crop(o2, o, img_input)
 	o = (concatenate([ o ,o2],axis=-1 ))	
-	o = Conv2DTranspose(classes, kernel_size=(2, 2), strides=(2, 2), use_bias=False)(o)
+	#o = Conv2DTranspose(classes, kernel_size=(2, 2), strides=(2, 2), use_bias=False)(o)
+	o = BilinearUpSampling2D(size=(2, 2))(o)
+        o = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o)
 
 
 #########3
@@ -242,7 +247,8 @@ def VggIFCN(input_shape=None, weight_decay=0., batch_momentum=0.9, batch_shape=N
  	#p5=x
 	x = (Conv2D(classes, (1, 1), kernel_initializer='he_normal',activation='linear',kernel_regularizer=l2(weight_decay)))(x)
 	#print(o.shape)
-	x = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(x)
+	#x = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(x)
+        x = BilinearUpSampling2D(size=(2, 2))(x)
 	#print(o.shape)
 	#imshow(o)
 	o=x
@@ -250,7 +256,7 @@ def VggIFCN(input_shape=None, weight_decay=0., batch_momentum=0.9, batch_shape=N
 	o2 = p4
 	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
 	#print(o2.shape)
-	o, o2 = crop(o, o2, img_input)
+	#o, o2 = crop(o, o2, img_input)
 	#print(o.shape)
 	#print(o2.shape)
 	o = Add()([o, o2])
@@ -267,11 +273,11 @@ def VggIFCN(input_shape=None, weight_decay=0., batch_momentum=0.9, batch_shape=N
     	o = BatchNormalization()(o)
 
 	
-	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
-	
+	#o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+	o = BilinearUpSampling2D(size=(2, 2))(o)
 	o2 = p3
 	o2 = (Conv2D(classes, (1, 1), kernel_initializer='he_normal'))(o2)
-	o2, o = crop(o2, o, img_input)
+	#o2, o = crop(o2, o, img_input)
 	#o = Add()([o2, o])	
 	
 	o = Add()([o, o2])
@@ -340,18 +346,19 @@ def VggIFCN(input_shape=None, weight_decay=0., batch_momentum=0.9, batch_shape=N
     	o = Add()([o, temp_c4])
     	o = Add()([o, temp_c5])
     	o = Add()([o, temp_c6])
-
-    	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+	o = BilinearUpSampling2D(size=(2, 2))(o)
+    	#o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
     	o, temp_20 = crop(o, temp_20, img_input)
 
 
 	o = Add()([o, temp_20])
 
-    	temp_20 = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(temp_20)
-    	o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
-
-    	temp_20, temp_40 = crop(temp_20, temp_40, img_input)
-    	o, temp_40 = crop(o, temp_40, img_input)
+    	#temp_20 = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(temp_20)
+    	#o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
+	temp_20 = BilinearUpSampling2D(size=(2, 2))(temp_20)
+	o = BilinearUpSampling2D(size=(2, 2))(o)
+    	#temp_20, temp_40 = crop(temp_20, temp_40, img_input)
+    	#o, temp_40 = crop(o, temp_40, img_input)
 
     	o = Add()([o, temp_40])
     	o = Add()([o, temp_20])
@@ -366,16 +373,16 @@ def VggIFCN(input_shape=None, weight_decay=0., batch_momentum=0.9, batch_shape=N
 
 
 	#o = Conv2DTranspose(classes, kernel_size=(16, 16), strides=(8, 8), use_bias=False)(o)
-	o = Conv2DTranspose(classes, kernel_size=(8, 8), strides=(8, 8), use_bias=False)(o)
-
+	#o = Conv2DTranspose(classes, kernel_size=(8, 8), strides=(8, 8), use_bias=False)(o)
+	o = BilinearUpSampling2D(size=(8, 8))(o)
 	o_shape = Model(img_input, o).output_shape
 
 	outputHeight = o_shape[1]
 	outputWidth = o_shape[2]
 
-	o = (Reshape((-1, outputHeight * outputWidth)))(o)
-	o = (Permute((2, 1)))(o)
-	o = (Reshape((outputHeight , outputWidth,-1)))(o)
+	#o = (Reshape((-1, outputHeight * outputWidth)))(o)
+	#o = (Permute((2, 1)))(o)
+	#o = (Reshape((outputHeight , outputWidth,-1)))(o)
 	#o = (Activation('softmax'))(o)
 	model = Model(img_input, o)
 	model.outputWidth = outputWidth

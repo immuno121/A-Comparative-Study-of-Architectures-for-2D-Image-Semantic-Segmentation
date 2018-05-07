@@ -309,15 +309,15 @@ if __name__ == '__main__':
     #model_name = 'Atrous_DenseNet'
     #model_name = 'DenseNet_FCN'
    # model_name='FCN_Vgg16_8s'
-    model_name='FCN_Vgg16_16s'
-    #model_name='VggIFCN'
-    #model_name='VGGUnet'
+    #model_name='FCN_Vgg16_16s'
+    model_name='VggIFCN'
+   # model_name='VGGUnet'
     batch_size = 16
     batchnorm_momentum = 0.95
     epochs = 250
     lr_base = 0.0001 * (float(batch_size) / 16)
     lr_power = 0.9
-    resume_training =True
+    resume_training =False
     if model_name is 'AtrousFCN_Resnet50_16s':
         weight_decay = 0.0001/2
     else:
