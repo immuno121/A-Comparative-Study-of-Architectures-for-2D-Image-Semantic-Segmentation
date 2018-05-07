@@ -346,9 +346,11 @@ def VggIFCN(input_shape=None, weight_decay=0., batch_momentum=0.9, batch_shape=N
     	o = Add()([o, temp_c4])
     	o = Add()([o, temp_c5])
     	o = Add()([o, temp_c6])
+        o=(Conv2D(classes, (1, 1), kernel_initializer='RandomNormal', padding='same'))(o)
+
 	o = BilinearUpSampling2D(size=(2, 2))(o)
     	#o = Conv2DTranspose(classes, kernel_size=(4, 4), strides=(2, 2), use_bias=False)(o)
-    	o, temp_20 = crop(o, temp_20, img_input)
+    	#o, temp_20 = crop(o, temp_20, img_input)
 
 
 	o = Add()([o, temp_20])
