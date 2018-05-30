@@ -22,3 +22,30 @@ We also modify the U-Net architecture for multi-class
 semantic segmentation with pre-trained weights from the
 VGG-16 architecture trained on the ImageNet dataset.
 
+This repository is organized as follows:
+# 1.Models:
+This folder contains following Models implemented:
+FCN 32s
+FCN 16 s
+FCN 8s
+IFCN(Improved FCN)
+U-Net(pre-trained on vgg16)
+Work is in progress for 
+Resnet
+Dilated Densenets
+
+# 2.code 
+models.py--> architecture of all models
+train.py--> training file(softamx loss used)
+evluate.py--> uses Mean IOU 
+infernece.py--> called by evaluate.py
+
+# 3. Project report
+this is a comprehensive report detailing all the analysis and discussing my work. Have a look at it if you would like to know in more detail about the project
+
+# 4. utils
+Contains all the utility folders
+
+# 5. train-text files
+these contain all the training and the testing files
+
