@@ -1,4 +1,7 @@
 # A Comparative study of Architectures for Performing Semantic Segementation of 2D images on PASCAL VOC dataset
+# Note:
+This work is still in progress. I worked in it as a part of my course project in Spring 2018. Currently I am tweaking the implemented architectures and also experimenting with new architectures such as Dilated Convolutions and Dilated Dense nets which might result in a better performace
+
 Semantic Segmentation involves understanding the im-
 age on a pixel-by-pixel level i.e. to assign a class label to
 every pixel in the image. We experiment with different ar-
