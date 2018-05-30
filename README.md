@@ -49,3 +49,10 @@ Contains all the utility folders
 # 5. train-text files
 these contain all the training and the testing files
 
+# conclusion
+The order in which models performed on the PASCAL VOC dataset is as follows:
+U-Net>IFCN>FCN8s>FCN16s>FCN32s
+
+# Results
+A sample of result images is shown in the project report. One can clearly make out the difference between the results fo different models
+
