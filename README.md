@@ -25,7 +25,7 @@ VGG-16 architecture trained on the ImageNet dataset.
 This repository is organized as follows:
 # 1.Models:
 This folder contains following Models implemented:
-FCN 32s
+FCN 32s 
 FCN 16 s
 FCN 8s
 IFCN(Improved FCN)
